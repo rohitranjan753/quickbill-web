@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Package, AlertTriangle, Shield, ArrowRight } from 'lucide-react'
+import { Package, AlertTriangle, Shield, ArrowRight, QrCode } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../../context/StoreContext'
 import { useAuth } from '../../context/AuthContext'
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import { CreateStoreForm } from '../../components/dashboard/CreateStoreForm'
+import { StoreQRModal } from '../../components/dashboard/StoreQRModal'
 import { productsApi } from '../../api/products.api'
 import { inventoryApi } from '../../api/inventory.api'
 import { staffApi } from '../../api/staff.api'
@@ -21,6 +22,7 @@ export function DashboardHome() {
   const navigate = useNavigate()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showQR, setShowQR] = useState(false)
 
   useEffect(() => {
     if (!storeId) { setLoading(false); return }
@@ -95,6 +97,33 @@ export function DashboardHome() {
             iconBg="bg-secondary/10"
           />
         </div>
+      )}
+
+      {/* Store QR Code */}
+      {store && (
+        <>
+          <div className="card p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-card flex items-center justify-center flex-shrink-0">
+                <QrCode size={18} className="text-primary" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-on-surface">Store QR Code</div>
+                <div className="text-xs text-on-surface-variant mt-0.5">
+                  Share with customers to let them select your store
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowQR(true)}
+              className="btn-primary flex-shrink-0"
+            >
+              <QrCode size={15} />
+              View QR
+            </button>
+          </div>
+          <StoreQRModal isOpen={showQR} onClose={() => setShowQR(false)} store={store} />
+        </>
       )}
 
       {/* Quick actions */}

@@ -47,7 +47,7 @@ export function StoreQRModal({ isOpen, onClose, store }: StoreQRModalProps) {
           <QRCode
             value={store.id}
             size={200}
-            fgColor="#006948"
+            fgColor="#000000"
             bgColor="#ffffff"
             level="M"
           />

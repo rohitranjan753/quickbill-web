@@ -1,15 +1,23 @@
-import { useState, type FormEvent } from 'react'
-import { Store } from 'lucide-react'
+import { useState, useEffect, type FormEvent } from 'react'
+import { Store, MapPin, LocateFixed, CheckCircle2, AlertCircle } from 'lucide-react'
 import { storesApi, type CreateStoreDto } from '../../api/stores.api'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
 type FieldErrors = Partial<Record<keyof CreateStoreDto, string>>
+type LocationState = 'idle' | 'requesting' | 'granted' | 'denied' | 'unavailable'
+
+interface Coords {
+  latitude: number
+  longitude: number
+}
 
 export function CreateStoreForm() {
   const { refreshProfile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [locationState, setLocationState] = useState<LocationState>('idle')
+  const [coords, setCoords] = useState<Coords | null>(null)
   const [form, setForm] = useState<CreateStoreDto>({
     name: '',
     address: '',
@@ -21,6 +29,29 @@ export function CreateStoreForm() {
     gstin: '',
   })
 
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationState('unavailable')
+    }
+  }, [])
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) return
+    setLocationState('requesting')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        setLocationState('granted')
+        toast.success('Location captured successfully.')
+      },
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) setLocationState('denied')
+        else setLocationState('idle')
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    )
+  }
+
   const update = (field: keyof CreateStoreDto) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
     if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }))
@@ -31,7 +62,11 @@ export function CreateStoreForm() {
     setLoading(true)
     setFieldErrors({})
     try {
-      await storesApi.create(form)
+      const payload: CreateStoreDto = {
+        ...form,
+        ...(coords ? { latitude: coords.latitude, longitude: coords.longitude } : {}),
+      }
+      await storesApi.create(payload)
       await refreshProfile()
       toast.success('Store created! Welcome to QuickBill.')
     } catch (err: unknown) {
@@ -59,6 +94,70 @@ export function CreateStoreForm() {
           <h2 className="text-2xl font-bold text-on-surface">Set up your store</h2>
           <p className="text-on-surface-variant text-sm mt-1">Tell us about your store to get started</p>
         </div>
+
+        {/* Location permission banner */}
+        {locationState !== 'unavailable' && (
+          <div className={`mb-4 rounded-xl border px-4 py-3.5 flex items-start gap-3 ${
+            locationState === 'granted'
+              ? 'bg-green-50 border-green-200'
+              : locationState === 'denied'
+              ? 'bg-red-50 border-red-200'
+              : 'bg-surface-card border-outline-variant'
+          }`}>
+            <div className={`mt-0.5 flex-shrink-0 ${
+              locationState === 'granted' ? 'text-green-600' :
+              locationState === 'denied' ? 'text-red-500' : 'text-primary'
+            }`}>
+              {locationState === 'granted' ? (
+                <CheckCircle2 size={17} />
+              ) : locationState === 'denied' ? (
+                <AlertCircle size={17} />
+              ) : (
+                <MapPin size={17} />
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              {locationState === 'granted' && coords ? (
+                <>
+                  <p className="text-sm font-semibold text-green-800">Location captured</p>
+                  <p className="text-xs text-green-700 mt-0.5">
+                    {coords.latitude.toFixed(5)}, {coords.longitude.toFixed(5)} — your store will appear in the customer locator.
+                  </p>
+                </>
+              ) : locationState === 'denied' ? (
+                <>
+                  <p className="text-sm font-semibold text-red-700">Location permission denied</p>
+                  <p className="text-xs text-red-600 mt-0.5">
+                    Allow location in your browser settings to enable the store locator, or continue without it.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-on-surface">Allow location access</p>
+                  <p className="text-xs text-on-surface-variant mt-0.5">
+                    Used to pin your store on the customer locator map so shoppers nearby can find you.
+                  </p>
+                </>
+              )}
+            </div>
+
+            {locationState === 'idle' && (
+              <button
+                type="button"
+                onClick={requestLocation}
+                className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-card transition-colors"
+              >
+                <LocateFixed size={13} />
+                Allow
+              </button>
+            )}
+
+            {locationState === 'requesting' && (
+              <div className="flex-shrink-0 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mt-0.5" />
+            )}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="card p-6 flex flex-col gap-4">
           <div>

@@ -24,6 +24,8 @@ export interface CreateStoreDto {
   phone?: string
   email?: string
   gstin?: string
+  latitude?: number
+  longitude?: number
 }
 
 export const storesApi = {

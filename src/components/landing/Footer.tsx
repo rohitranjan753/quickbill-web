@@ -1,6 +1,8 @@
 import { Zap } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export function Footer() {
+  const navigate = useNavigate()
   const scrollTo = (href: string) => {
     const el = document.querySelector(href)
     if (el) el.scrollIntoView({ behavior: 'smooth' })
@@ -48,9 +50,8 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-sm mb-4 text-white/70">Contact</h4>
             <div className="flex flex-col gap-2 text-white/50 text-sm">
-              <span>hello@quickbill.in</span>
-              <span>+91 98765 43210</span>
-              <span>Bengaluru, Karnataka</span>
+              <span>rohit.techhive@gmail.com</span>
+              <span>New Delhi, India</span>
             </div>
           </div>
         </div>
@@ -59,11 +60,19 @@ export function Footer() {
           <p className="text-white/40 text-xs">
             © {new Date().getFullYear()} QuickBill. All rights reserved.
           </p>
-          <p className="text-white/40 text-xs">
-            Built with{' '}
-            <span className="text-tertiary">♥</span>{' '}
-            in India
-          </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/privacy-policy')}
+              className="text-white/40 text-xs hover:text-white/70 transition-colors"
+            >
+              Privacy Policy
+            </button>
+            <p className="text-white/40 text-xs">
+              Built with{' '}
+              <span className="text-tertiary">♥</span>{' '}
+              in India
+            </p>
+          </div>
         </div>
       </div>
     </footer>

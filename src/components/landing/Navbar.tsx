@@ -80,7 +80,7 @@ export function Navbar() {
                     : 'bg-white text-primary hover:bg-white/90'
                 }`}
               >
-                Owner Login
+                Store Owner Login
               </button>
             )}
           </div>
@@ -118,7 +118,7 @@ export function Navbar() {
                 onClick={() => { setMenuOpen(false); user ? navigate('/dashboard') : signInWithGoogle() }}
                 className="btn-primary mt-2 justify-center"
               >
-                {user ? 'Go to Dashboard' : 'Owner Login'}
+                {user ? 'Go to Dashboard' : 'Store Owner Login'}
               </button>
             </div>
           </motion.div>

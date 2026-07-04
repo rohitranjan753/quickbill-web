@@ -10,6 +10,7 @@ import { DashboardHome } from './pages/dashboard/DashboardHome'
 import { InventoryPage } from './pages/dashboard/InventoryPage'
 import { StocksPage } from './pages/dashboard/StocksPage'
 import { GuardsPage } from './pages/dashboard/GuardsPage'
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage'
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
               <Route path="stocks" element={<StocksPage />} />
               <Route path="guards" element={<GuardsPage />} />
             </Route>
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="*" element={<LandingPage />} />
           </Routes>
         </StoreProvider>

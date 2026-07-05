@@ -81,6 +81,42 @@ export function HeroSection() {
               </button>
             </motion.div>
 
+            {/* Play Store CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
+              className="mb-8"
+            >
+              <a
+                href="https://play.google.com/store/apps/details?id=com.techhive.quickbill.customer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 bg-black/70 backdrop-blur-sm border border-white/20 hover:border-white/50 hover:bg-black/90 text-white px-5 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-primary/30 hover:shadow-xl active:scale-95"
+              >
+                {/* Play Store icon */}
+                <svg className="w-7 h-7 flex-shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3.18 23.5c.3.17.64.22.97.15L14.72 12 3.18.35A1.5 1.5 0 003 1.5v21c0 .37.07.72.18 1z" fill="#EA4335"/>
+                  <path d="M18.82 9.17L15.43 12l3.39 2.83 3.87-2.25a1.5 1.5 0 000-2.58l-3.87-2.83z" fill="#FBBC04"/>
+                  <path d="M3.18 23.5L14.72 12 3.18.35C2.76.47 2.5.89 2.5 1.5v21c0 .61.26 1.03.68 1z" fill="#EA4335"/>
+                  <path d="M14.72 12L3.18 23.5c.33.06.67.01.97-.16l14.67-8.51L14.72 12z" fill="#34A853"/>
+                  <path d="M3.18.35L14.72 12l4.1-4.83L3.97.19A1.5 1.5 0 003.18.35z" fill="#4285F4"/>
+                </svg>
+                <div className="text-left">
+                  <div className="text-[10px] text-white/60 leading-none mb-0.5">GET IT ON</div>
+                  <div className="text-sm font-semibold leading-none">Google Play</div>
+                </div>
+                <motion.div
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                  className="ml-1 text-white/50 group-hover:text-white/90 transition-colors"
+                >
+                  <ArrowRight size={14} />
+                </motion.div>
+              </a>
+              <p className="text-white/40 text-xs mt-2 ml-1">Free download · For customers</p>
+            </motion.div>
+
             {/* Trust indicators */}
             <motion.div
               initial={{ opacity: 0 }}

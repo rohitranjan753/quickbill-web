@@ -1,7 +1,8 @@
-import { useState, useEffect, type FormEvent } from 'react'
-import { Store, MapPin, LocateFixed, CheckCircle2, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useRef, type FormEvent } from 'react'
+import { Store, MapPin, LocateFixed, CheckCircle2, AlertCircle, ImagePlus, X } from 'lucide-react'
 import { storesApi, type CreateStoreDto } from '../../api/stores.api'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
 type FieldErrors = Partial<Record<keyof CreateStoreDto, string>>
@@ -18,6 +19,9 @@ export function CreateStoreForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [locationState, setLocationState] = useState<LocationState>('idle')
   const [coords, setCoords] = useState<Coords | null>(null)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<CreateStoreDto>({
     name: '',
     address: '',
@@ -57,14 +61,49 @@ export function CreateStoreForm() {
     if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: undefined }))
   }
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+  }
+
+  const removeLogo = () => {
+    setLogoFile(null)
+    setLogoPreview(null)
+    if (logoInputRef.current) logoInputRef.current.value = ''
+  }
+
+  const uploadLogo = async (file: File): Promise<string | undefined> => {
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `logos/${Date.now()}.${ext}`
+    const { data, error } = await supabase.storage.from('store-images').upload(path, file)
+    if (error) {
+      toast.error('Logo upload failed — store created without logo')
+      return undefined
+    }
+    const { data: urlData } = supabase.storage.from('store-images').getPublicUrl(data.path)
+    return urlData.publicUrl
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setFieldErrors({})
     try {
+      let logo_url: string | undefined
+      if (logoFile) {
+        logo_url = await uploadLogo(logoFile)
+      }
+
       const payload: CreateStoreDto = {
         ...form,
         ...(coords ? { latitude: coords.latitude, longitude: coords.longitude } : {}),
+        ...(logo_url ? { logo_url } : {}),
       }
       await storesApi.create(payload)
       await refreshProfile()
@@ -160,6 +199,42 @@ export function CreateStoreForm() {
         )}
 
         <form onSubmit={handleSubmit} className="card p-6 flex flex-col gap-4">
+          {/* Store logo upload */}
+          <div>
+            <label className="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wide">
+              Store Logo
+            </label>
+            <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+            {logoPreview ? (
+              <div className="relative w-full h-32 rounded-xl overflow-hidden border border-outline-variant">
+                <img src={logoPreview} alt="Store logo" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={removeLogo}
+                  className="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
+                >
+                  <X size={14} className="text-white" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  className="absolute bottom-2 right-2 px-3 py-1.5 bg-black/50 hover:bg-black/70 rounded-lg text-white text-xs font-medium transition-colors"
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                className="w-full h-20 rounded-xl border-2 border-dashed border-outline-variant hover:border-primary hover:bg-primary/5 flex items-center justify-center gap-3 transition-colors text-on-surface-variant hover:text-primary"
+              >
+                <ImagePlus size={20} />
+                <span className="text-xs font-medium">Upload store logo (optional)</span>
+              </button>
+            )}
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wide">
               Store Name *

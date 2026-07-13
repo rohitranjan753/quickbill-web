@@ -26,6 +26,7 @@ export interface CreateStoreDto {
   gstin?: string
   latitude?: number
   longitude?: number
+  logo_url?: string
 }
 
 export const storesApi = {

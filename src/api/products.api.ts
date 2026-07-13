@@ -30,6 +30,7 @@ export interface CreateProductDto {
   unit?: string
   tax_rate?: number
   hsn_code?: string
+  image_url?: string
 }
 
 export interface BulkUploadResult {
